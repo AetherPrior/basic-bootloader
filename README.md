@@ -31,3 +31,8 @@ readDisk.asm -- to read more sectors
 
 TestA20.asm -- testing if A20 line is enabled
 
+checklm -- checks for long mode
+
+loadE820 -- detects the memory via e820 
+
+videoMode -- currently switches to 320x200 256 color mode (mode 13h)

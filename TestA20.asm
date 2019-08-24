@@ -15,32 +15,32 @@
 
 TestA20:
 
-;if the segmented location of a constant memory location is equal to the unsegmented location, 
-;(ffff:aa55 == 0000:aa55)
-;then a20 is disabled as it's wrapped
-;else it's fine
-;we'll choose our magic number, stored in 0x7dfe
 
-pusha	;push all registers
+						;if the segmented location of a constant memory location is equal to the unsegmented location, 
+						;(ffff:aa55 == 0000:aa55)
+						;then a20 is disabled as it's wrapped
+						;else it's fine
+						;we'll choose our magic number, stored in 0x7dfe
 
-mov ax,[0x7dfe]	;move [0x7dfe] which is aa55
-mov cx,ax	;copy to cx register
+pusha					;push all registers
 
-;call printh	;debugging
+mov ax,[0x7dfe]			;move [0x7dfe] which is aa55
+mov cx,ax				;copy to cx register
 
-;0xffff0+offset = 0x107dfe
-;offset = 0x107dfe-0xffff0 = 0x7e0e
-;if A20 is disabled then we get the location as 7dfe
-;but if enabled we don't
 
-;call SegTest 	;debugging
-;mov ax,0x2400	;debugging. part of enabling the a20 line
-;int 15h	;debugging. part of enabling the a20 line
 
-call SegTest	;actual testing here
+							;call printh	;debugging
 
-;call EnableA20 
-ret
+							;0xffff0+offset = 0x107dfe
+							;offset = 0x107dfe-0xffff0 = 0x7e0e
+							;if A20 is disabled then we get the location as 7dfe
+							;but if enabled we don't
+
+							;call SegTest 	;debugging
+							;mov ax,0x2400	;debugging. part of enabling the a20 line
+							;int 15h	;debugging. part of enabling the a20 line
+
+
 
 SegTest:
 push bx		;save previous value
@@ -48,12 +48,16 @@ xor bx,bx	;zero the bx register
 sub bx,1	;bx = 0xffff
 mov es,bx	;es = 0xffff
 pop bx		;get the previous saved value
+
 mov bx,0x7e0e	;basically sending the offset to check
-		;es:bx = 0xffff0+0x7e0e = 0x107dfe
-		;if a20 is disabled we get 0x7dfe, which has the value 0xaa55
+				;es:bx = 0xffff0+0x7e0e = 0x107dfe
+				;if a20 is disabled we get 0x7dfe, which has the value 0xaa55
+
 mov dx,[es:bx]	;if aa55 then there's a wrap, otherwise no
-sub dx,cx	;dx - cx . cx has [0x7dfe] which is aa55
-		;zero flag will be set if zero
+sub dx,cx		;dx - cx . cx has [0x7dfe] which is aa55
+				;zero flag will be set if zero
+
 popa
 ret
+
 ;Turns out QEMU does enable the A20 line by default

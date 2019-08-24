@@ -1,15 +1,18 @@
 EnableA20:
 
+
 call TestA20
-jnz EndA20	;Is it already enabled? if so go to end  
-		;the TestA20 routine sets the zero flag if A20 is disabled (after subtracting 0x7dfe)
+jnz EndA20		;Is it already enabled? if so go to end  
+				;the TestA20 routine sets the zero flag if A20 is disabled (after subtracting 0x7dfe)
 
 ;DO IT THE FAST WAY
+
 
 
 in al,0x92
 or al,2
 out 0x92,al
+
 call TestA20 ;Returns 0 if A20 is still disabled 
 jnz EndA20
 
@@ -21,9 +24,10 @@ mov cx,5 	;counter
 BIOS:
 mov ax,0x2401	;set ax to value
 int 0x15	
-call TestA20	
 
-jnz EndA20	
+call TestA20	
+jnz EndA20
+
 loop BIOS	;try 5 times
 
 
@@ -60,8 +64,10 @@ out 0x64,al		;output: port
 call Wait_8042_command
 
 sti			;enable interrupts
+
 call TestA20		;test this thing once again
 jnz EndA20		;is it STILL not open??
+
 jz FAILURE		;Sorry, can't do anything
 
 
@@ -88,8 +94,16 @@ jmp $
 EndA20:
 mov si,SUCCESSA20
 call printf
+
 ret
 
 
 FAILA20 db "A20 LINE COULD NOT BE ENABLED",0
-SUCCESSA20 db "A20 ENABLED",0
+SUCCESSA20 db "A20 ENABLED",10,13,0
+
+debug:
+	mov si, Msg
+	call printf
+	ret
+
+Msg: db "I GOT HERE",0

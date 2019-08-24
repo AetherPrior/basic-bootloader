@@ -9,27 +9,27 @@ cpudetect:
 ;support
 
 	pusha
-	pushfd ;push eflags
-	pop eax;pop into eax
+	pushfd 		;push eflags
+	pop eax 	;pop into eax
 	
-	mov ecx,eax ;copy value
-	xor eax, 1<<21;attempt to flip bit
+	mov ecx,eax 	;copy value
+	xor eax, 1<<21	;attempt to flip bit
 
 	push eax 
-	popfd	;pop modified value into eflags register
-		;this may or may not modify eflags depending on whether
-		;processor supports CPUID
-	pushfd	;push eflags
-	pop eax	;pop into eax
-	xor eax,ecx ;compare if original value is retained
-	jz NoID	;if so, no support :(
+	popfd			;pop modified value into eflags register
+					;this may or may not modify eflags depending on whether
+					;processor supports CPUID
+	pushfd			;push eflags
+	pop eax			;pop into eax
+	xor eax,ecx 	;compare if original value is retained
+	jz NoID			;if so, no support :(
 
 long_mode:
-;Check if extended functions is available in cpuid
+					;Check if extended functions is available in cpuid
 	mov eax, 0x80000000
 	cpuid			;cpu- identification
 	cmp eax, 0x80000001
-	jb NoExFunc ;jump if below
+	jb NoExFunc 	;jump if below
 	
 	mov eax, 0x80000001
 	cpuid
@@ -39,6 +39,11 @@ long_mode:
 	call printf
 	popa
 	ret
+
+
+
+
+
 NoID:
 	mov si,ID_FAIL
 	call printf
@@ -56,3 +61,8 @@ YesLM:
 	mov si,LM_SUCCESS
 	call printf
 	ret
+
+LM_SUCCESS db "Long Mode is available",10,13,0
+ID_FAIL db "CPUID UNSUPPORTED",10,0
+EXFUNC_FAIL db "Extended functions UNSUPPORTED",10,0
+LM_FAIL db "Long Mode unavailable",10,0
