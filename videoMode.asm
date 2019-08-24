@@ -9,8 +9,7 @@ videoMode:
 ;************************VESA lite, use 13H for now**********************************
 
 push ax
-mov ah, 0x00
-mov al, 0x13
+mov ax, 0x0013
 int 10h
 pop ax
 ret

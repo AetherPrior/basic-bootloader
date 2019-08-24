@@ -101,9 +101,3 @@ ret
 FAILA20 db "A20 LINE COULD NOT BE ENABLED",0
 SUCCESSA20 db "A20 ENABLED",10,13,0
 
-debug:
-	mov si, Msg
-	call printf
-	ret
-
-Msg: db "I GOT HERE",0
