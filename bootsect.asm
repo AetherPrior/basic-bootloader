@@ -38,7 +38,7 @@ ZeroSeg:
 ;*******************************READ SECTORS**************************************
 
 
-mov al,1 		; read 1 sector
+mov al,2 		; read 2 sectors
 mov cl,2 		; sectors start from 1, sector 1 is bootloader, so read sector 2
 call readDisk
 
@@ -53,7 +53,11 @@ mov dx,ax		;trial 1: received 6 entries
 call printh
 
 ;TODO Configure Proper video modes
-call videoMode
+;call videoMode
+
+
+
+
 
 
 
@@ -68,6 +72,11 @@ call sect2 		; works if sect2 is read
 %include "./printh.asm"
 %include "./loadE820.asm"
 %include "./videoMode.asm"
+
+%include "./gdt.asm"
+
+
+
 times 510 - ($-$$) db 0	;padding
 dw 0xaa55				;Magic number
 
@@ -85,68 +94,52 @@ sect2:
 	mov si, MESSAGE
 	call printf
 
-	call checklm
+	;call checklm
 
 	mov si,DISKSUCCESSMSG
 	call printf
 
 	call keyb
+
+
+
+;*******************************ENTRY TO PROTECTED MODE**************************
+call videoMode
+call enterProtected
+
+
 ;*******************************TEST CODE********************************
 
 
-	push 0a000h
-	pop es
-	mov cx,0x00ff
+call testvideo
 
-	set_palette:
-		mov al,cl
-		mov dx,0x3c8
-		out dx,al
-		mov dx,0x3c9
-		out dx,al
-		out dx,al
-		out dx,al
-		loop set_palette
 
-		mov bx, 320
-		
-	XOR_pattern:
-	;display an XOR pattern to show video mode capabilities
-		xor dx,dx
-		mov ax,di
-		div bx
+	mov si,DISKSUCCESSMSG
+	call printf
 
-		xor ax,dx
-		mul cx
-		div bx
+jmp $
 
-		mov [es:di],ax
-		inc di
-		cmp di, 0xfa00
-		jne XOR_pattern
-		push 0x0a000
-		pop es
-		inc cx
-		xor di,di
-		jmp XOR_pattern
-	call keyb
-	jmp $
-	
-;***************************TODO: SWITCH TO PROTECTED MODE*********************
-	
+
+
+%include "./TestA20.asm"
+%include "./EnableA20.asm"
+%include "./checklm.asm"
+%include "./enterProtected.asm"
+
+
+MESSAGE db "Hello, World!",0x0a,0x0d,0
+DISKSUCCESSMSG db "Welcome to my first OS!",0ah,0dh,0
+
+
+
+times 512-($-sect2) db 0
+
+sect3:
+
+%include "./testvideo.asm"
 keyb:
 		mov ah,00h
 		int 16h
 		cmp ah,0
 		je keyb
 		ret
-
-%include "./TestA20.asm"
-%include "./EnableA20.asm"
-%include "./checklm.asm"
-
-MESSAGE db "Hello, World!",0x0a,0x0d,0
-DISKSUCCESSMSG db "Welcome to my first OS!",0ah,0dh,0
-
-times 512-($-sect2) db 0
-
