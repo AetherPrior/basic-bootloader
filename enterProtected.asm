@@ -1,6 +1,6 @@
 enterProtected:
 	
-	;cli
+	cli
 
 
 
@@ -9,8 +9,6 @@ enterProtected:
 	mov ds,ax
 	
 	
-
-
 	lgdt [GDT_DESC]
 
 	mov eax, cr0
@@ -35,7 +33,10 @@ enterProtected:
 		mov byte [0B8000h], 'P'
 		mov byte [0B8001h], 1Bh
 
-	stp:	
-		cli
-		hlt
+		
+		ret
+
+	;stp:	
+	;	cli
+	;	hlt
 	

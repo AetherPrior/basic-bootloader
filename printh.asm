@@ -1,6 +1,7 @@
 printh:
 ;to print a 16-bit address
 ;let dx be the argument
+	pusha
 	xor ax,ax
 	mov cl,10h
 	mov si,HEX_PATTERN
@@ -22,7 +23,8 @@ subp:
 	
 	cmp ax,4		;
 	jne subp
-	call printf 
+	call printf
+	popa 
 	ret
 HEX_PATTERN: db "0x****",0ah,0dh,0
 HEX_TABLE: db "0123456789abcdef"
