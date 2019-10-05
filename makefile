@@ -1,10 +1,10 @@
 bootsect.bin:*.asm
-	nasm -fbin bootsect.asm -o bootsect.bin
+	nasm -fbin bootloader.asm -o bootloader.bin
 
 clean:
 	rm *.bin
 rq:
-	qemu-system-x86_64 bootsect.bin 
+	qemu-system-x86_64 bootloader.bin 
 
 rb:
 	bochs
