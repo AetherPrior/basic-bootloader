@@ -1,12 +1,13 @@
-[org 0x7c00]  ;start at 0x7c00
+;[org 0x7c00]  ;start at 0x7c00
 [bits 16]
 
 mmap_entries equ 0x8000
 
+[extern mainKernel]
 
-global main   ;main is global and is our entry point
+global start   ;start is global and is our entry point
 
-main:
+start:
 jmp ZeroSeg  				;try jmp 0x0000:ZeroSeg
 dw 0x00						;padding
 
@@ -56,7 +57,7 @@ ZeroSeg:
 	xor di,di
 	
 	
-	mov ax, 0x0002 	; number of sectors read
+	mov ax, 0x0010 	; number of sectors read
 	mov cx, 0x0001	;absolute number (not addr of start sector (sector 0 is bootloader here))
 	
 	call readDisk
@@ -77,11 +78,11 @@ printf:
 	strLoop:
 	 lodsb
 	 or al,al
-	 jz end
+	 jz end__
 	 mov ah,0eh
 	 int 10h
 	 jmp strLoop
-	end:
+	end__:
 	 popa
 	 ret
 
@@ -139,6 +140,7 @@ readDisk:
 	;0x00 for first floppy 
 	;rather than forcing dl to a value, use the one provided by bios
 	mov ah, 0x42
+
 	int 13h
 	jc fail
 
@@ -307,9 +309,10 @@ sect2:
 	mov si, MESSAGE
 	call printf
 
-	call checklm
-	call enterProtected
-	jmp $
+	;call checklm
+	jmp enterProtected
+
+	
 
 
 ;************************************************TestA20 code**************************************
@@ -548,9 +551,6 @@ enterProtected:
 	
 	cli
 
-
-
-
 	xor ax,ax
 	mov ds,ax
 	
@@ -579,8 +579,9 @@ enterProtected:
 		mov byte [0B8000h], 'P'
 		mov byte [0B8001h], 1Bh
 
-		
-		ret
+		;jmp $
+		call mainKernel
+		jmp $
 
 
 
@@ -611,14 +612,13 @@ times 512-($-sect2) db 0
 
 
 sect3:
-
+[BITS 16]
 keyb:
 		mov ah,00h
 		int 16h
 		cmp ah,0
 		je keyb
 		ret
-
 ;***************************************GLOBAL DESCRIPTOR TABLE***************************************
 GDT:
 GDT_NULL:

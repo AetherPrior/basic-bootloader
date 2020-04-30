@@ -2,4 +2,9 @@
 /backups/*
 /OS/*
 bochsout.txt
-bochsrc.txt
+tempbochs.txt
+bootloader.bin
+mainKernel.o 
+disk.img
+boot.o 
+
