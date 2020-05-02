@@ -15,8 +15,8 @@ rb:
 
 compile:
 	nasm -felf32 $(BOOTLOADER) -o boot.o
-	i686-elf-gcc -c self_kernel/*.c -ffreestanding -O2 -Wall -Wextra -std=gnu99
-	i686-elf-gcc -T linker.ld -o bootloader.bin -ffreestanding -O2 -nostdlib *.o -lgcc
+	gcc -m32 -c self_kernel/*.c -ffreestanding -O2 -Wall -Wextra -std=gnu99 -fno-PIE
+	gcc -m32 -T linker.ld -o bootloader.bin -ffreestanding -O2 -nostdlib *.o -lgcc -fno-PIE
 	objcopy -O binary bootloader.bin bootloader.bin
 
 harddrive:
