@@ -3,8 +3,7 @@
 /OS/*
 bochsout.txt
 tempbochs.txt
-bootloader.bin
-mainKernel.o 
-disk.img
-boot.o 
+*.img
+*.o 
+*.bin
 

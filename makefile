@@ -6,6 +6,7 @@ bootsect.bin:*.asm
 
 clean:
 	rm *.bin
+	rm *.img
 rq:
 	qemu-system-x86_64 bootloader.bin 
 
@@ -13,10 +14,9 @@ rb:
 	bochs
 
 compile:
-	rm *.img
 	nasm -felf32 $(BOOTLOADER) -o boot.o
-	i686-elf-gcc -c self_kernel/$(KERNEL) -o mainKernel.o -ffreestanding -O2 -Wall -Wextra -std=gnu99
-	i686-elf-gcc -T linker.ld -o bootloader.bin -ffreestanding -O2 -nostdlib boot.o mainKernel.o -lgcc
+	i686-elf-gcc -c self_kernel/*.c -ffreestanding -O2 -Wall -Wextra -std=gnu99
+	i686-elf-gcc -T linker.ld -o bootloader.bin -ffreestanding -O2 -nostdlib *.o -lgcc
 	objcopy -O binary bootloader.bin bootloader.bin
 
 harddrive:

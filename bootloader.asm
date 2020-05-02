@@ -571,7 +571,7 @@ enterProtected:
 		mov ax, 10h  ;data segment, not codeseg 
 		mov ds, ax
 		mov ss, ax
-	
+		mov es, ax
 		;segment part set 
 		;set offset part
 	
