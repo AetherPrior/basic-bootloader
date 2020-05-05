@@ -1,4 +1,5 @@
 ;[org 0x7c00]  ;start at 0x7c00
+section .text
 [bits 16]
 
 mmap_entries equ 0x8000
@@ -159,9 +160,11 @@ readDisk:
 	ext_drv_none1:
 		mov si, DRVFAIL
 		call printf
+		jmp $
 	ext_none:
 		mov si, NOSUPPORT
 		call printf
+		jmp $
 align 4
 DAP:
 	DAP_SIZE: 			db 0x10
