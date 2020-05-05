@@ -75,3 +75,11 @@ void putstring(char *str)
     }
     moveCursor(cur_X, cur_Y);
 }
+
+size_t strlen(char *str)
+{
+    size_t i;
+    for (i = 0; str[i] != '\0'; i++)
+        ;
+    return i;
+}

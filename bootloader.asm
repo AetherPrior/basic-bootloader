@@ -2,7 +2,6 @@
 [bits 16]
 
 mmap_entries equ 0x8000
-
 [extern mainKernel]
 
 global start   ;start is global and is our entry point
@@ -114,6 +113,15 @@ printf:
 
 ;*********************************************************
 readDisk:
+	push ax
+	mov ah, 0x41          ; Int 13h/AH=41h: Check if extensions present
+    mov bx, 0x55aa
+    int 0x13
+    jc  ext_drv_none1      ; CF set - no extensions available for drive
+    cmp bx, 0xaa55        ; Is BX 0xaa55?
+    jnz ext_none          ;     If not, int 13h extensions not supported
+                          ;     by BIOS at all.
+	pop ax
 	mov [drive_number],dl
 	;reset state
 	push ax
@@ -148,6 +156,12 @@ readDisk:
 	pop ds
 	popa
 	ret
+	ext_drv_none1:
+		mov si, DRVFAIL
+		call printf
+	ext_none:
+		mov si, NOSUPPORT
+		call printf
 align 4
 DAP:
 	DAP_SIZE: 			db 0x10
@@ -282,9 +296,9 @@ drive_number db 00
 HEX_PATTERN: db "0x****",0ah,0dh,0
 HEX_TABLE: db "0123456789abcdef"
 
-E820_ERR_MESSAGE db "E820 IS NOT SUPPORTED/CALL FAILED",0ah,0dh,0
-
-
+E820_ERR_MESSAGE db "E820 IS NOT SUPPORTED",0ah,0dh,0
+DRVFAIL db "drive no sup",0
+NOSUPPORT db "NO SUPPORT",0
 times 510 - ($-$$) db 0	;padding
 dw 0xaa55				;Magic number
 
@@ -583,6 +597,24 @@ enterProtected:
 		call mainKernel
 		jmp $
 
+global gdt_flush
+gdt_flush:
+	lgdt [GDT_DESC]
+	mov ax, 0x10      
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+    jmp 0x08:flush2   ; 0x08 is the offset to our code segment: Far jump!
+flush2:
+    ret               ; Returns back to the C code!
+
+extern idtp
+global idt_load
+idt_load:
+	lidt [idtp]
+	ret
 
 
 MESSAGE db "In sector 2",0x0a,0x0d,0
@@ -612,14 +644,16 @@ times 512-($-sect2) db 0
 
 
 sect3:
-[BITS 16]
-keyb:
-		mov ah,00h
-		int 16h
-		cmp ah,0
-		je keyb
-		ret
+;[BITS 16]
+;keyb:
+;		mov ah,00h
+;		int 16h
+;		cmp ah,0
+;		je keyb
+;		ret
+
 ;***************************************GLOBAL DESCRIPTOR TABLE***************************************
+global GDT
 GDT:
 GDT_NULL:
 	dq 0 ; first segment, is null segment and is set to zero
@@ -629,10 +663,10 @@ GDT_CODE:
 
 	GDT_FIRST_DD:
 		dw 0xFFFF ;4GB LIMIT (osdever says dw 0FFFFh but same thing)
-		dw 0 ;BASE ADDRESS 0
+		dw 0x0000 ;BASE ADDRESS 0
 	
 	GDT_CONT_BASE_ADDR:
-		db 0 ; next 8 (bits 0-7 from now) bits are continuation 
+		db 0x00 ; next 8 (bits 0-7 from now) bits are continuation 
 	
 	GDT_SEGMENT_DESC:
 		db 10011010b ; bit 8 set by cpu
@@ -654,7 +688,7 @@ GDT_CODE:
 				 	 ; setting this bit muls segment limit by 4 kb
 				 	 ; 000FFFFfh X 01000h = FFFFf000
 	GDT_REM_BASE_ADDR:
-		db 0
+		db 0x00
 	
 GDT_DATA:
 	dw 0FFFFh ;copied from GDT_CODE
@@ -668,8 +702,11 @@ GDT_DATA:
 			    ; bit 11 for code seg (we want data seg)
 			    ; bit 12-15 same as codeseg
 	db 11001111b ;same as last time
-	db 0 ;same as last time 
+	db 0x00 ;same as last time 
 
+GDT_TSS_KERNEL: ;initialized later
+	dd 0
+	dd 0
 GDT_END:
 
 GDT_DESC:
