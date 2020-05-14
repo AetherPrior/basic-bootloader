@@ -114,7 +114,7 @@ printf:
 
 ;*********************************************************
 readDisk:
-	push ax
+	pusha
 	mov ah, 0x41          ; Int 13h/AH=41h: Check if extensions present
     mov bx, 0x55aa
     int 0x13
@@ -122,19 +122,16 @@ readDisk:
     cmp bx, 0xaa55        ; Is BX 0xaa55?
     jnz ext_none          ;     If not, int 13h extensions not supported
                           ;     by BIOS at all.
-	pop ax
 	mov [drive_number],dl
 	;reset state
-	push ax
 	xor ax,ax
 
  	int 13h
 	jc fail
-	pop ax
+
+	popa
 
 	pusha
-	push ds
-	push si 
 
 	mov word [DAP_START_SECTOR] , cx
 	mov word [DAP_NUM_SECTORS] , ax
@@ -153,8 +150,6 @@ readDisk:
 	int 13h
 	jc fail
 
-	pop si
-	pop ds
 	popa
 	ret
 	ext_drv_none1:
